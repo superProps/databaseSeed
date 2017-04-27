@@ -48,6 +48,6 @@ function getRandomRap(keyWord) {
 
 }
 
-getRandomRap("home");
+getRandomRap("Compton");
 
 module.exports = getRandomRap;

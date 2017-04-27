@@ -40,7 +40,7 @@ async.waterfall([
         results = results.filter(function (el) {
             return el.rhymes.length > 0;
         });
-        fs.appendFileSync("lyrics.txt", JSON.stringify(results), "UTF-8", { "flags": 'a+' })
+        fs.appendFileSync("lyrics.txt", JSON.stringify(',' + results), "UTF-8", { "flags": 'a+' })
         mongoose.connect(db, (err) => {
             if (err) {
                 console.log(err);
