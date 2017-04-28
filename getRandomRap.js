@@ -48,6 +48,6 @@ function getRandomRap(keyWord) {
 
 }
 
-getRandomRap("neck");
+getRandomRap("tricks");
 
 module.exports = getRandomRap;

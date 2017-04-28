@@ -27,7 +27,7 @@ const albums = new MusixmatchApi.AlbumApi();
 const tracks = new MusixmatchApi.TrackApi();
 const lyrics = new MusixmatchApi.LyricsApi();
 
-const artist = 'big daddy kane';
+const artist = 'lil wayne';  // drake, dr dre, snoop, eminem, nicki minaj, a tribe called quest, ll cool j, kendrick lamar, biggie, 2pac, queen latifah, lil kim, de la soul, busta rhymes, ghostface killah, krs-one, big sean, chris brown, lil wayne
 
 async.waterfall([
     getArtistId,
@@ -77,9 +77,8 @@ function getArtistId (next) {
             data.message.body.artist_list.forEach(function (el) {
                 console.log(el.artist.artist_name, el.artist.artist_id);
             });
-
             next(null, data.message.body.artist_list[0].artist.artist_id);
-            // next(null, 1156);
+            // next(null, );
         }
         else {
             throw new Error('bad response');
