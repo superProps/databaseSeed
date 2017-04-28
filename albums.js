@@ -8,7 +8,7 @@ var opts = {
     sReleaseDate:'desc',
     gAlbumName: 1
 };
-let artistId = 14094854; // {number}
+let artistId = 426; // {number}
 const hello = new MusixmatchApi.AlbumApi();
 hello.artistAlbumsGetGet(artistId, opts, (error, data, response) => {
     if (error) {

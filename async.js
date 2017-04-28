@@ -3,7 +3,7 @@ const MusixmatchApi = require('./build/javascript-client/src/index');
 const defaultClient = MusixmatchApi.ApiClient.instance;
 const key = defaultClient.authentications['key'];
 const _ = require('underscore');
-key.apiKey = '6bb1d096f126e94febca2495960e243f'; // {String} 
+key.apiKey = '0e33db5e8d277a212d13ded17755c930'; // {String} 
 var fs = require('fs');
 var NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 var SyllaRhyme = require('syllarhyme');
@@ -12,11 +12,27 @@ const mongoose = require('mongoose');
 const LyricsModel = require('./lyrics_schema');
 const db = 'mongodb://localhost:27017/lyrics';
 
+// Lukes
+// var nlu = new NaturalLanguageUnderstandingV1({
+//     "username": "73be2f66-c7ce-45cd-8571-fabe6adef297",
+//     "password": "aP7xkCkIx8Bj",
+//     version_date: NaturalLanguageUnderstandingV1.VERSION_DATE_2017_02_27
+// });
+
+// bernie
+
 var nlu = new NaturalLanguageUnderstandingV1({
-    "username": "f683016e-5f47-41d9-b7f3-82fdc1b81db1",
-    "password": "ZKAF5rQkLmGE",
+    "username": "b47657c3-c18e-49f4-a949-1415c80044da",
+    "password": "gMpQEb0HXf63",
     version_date: NaturalLanguageUnderstandingV1.VERSION_DATE_2017_02_27
 });
+
+//Mauross **
+// var nlu = new NaturalLanguageUnderstandingV1({
+//     "username": "f683016e-5f47-41d9-b7f3-82fdc1b81db1",
+//     "password": "ZKAF5rQkLmGE",
+//     version_date: NaturalLanguageUnderstandingV1.VERSION_DATE_2017_02_27
+// });
 
 
 const artists = new MusixmatchApi.ArtistApi();
@@ -24,7 +40,7 @@ const albums = new MusixmatchApi.AlbumApi();
 const tracks = new MusixmatchApi.TrackApi();
 const lyrics = new MusixmatchApi.LyricsApi();
 
-const artist = "eminem";
+const artist = "nwa";
 
 async.waterfall([
     getArtistId,
@@ -40,7 +56,7 @@ async.waterfall([
         results = results.filter(function (el) {
             return el.rhymes.length > 0;
         });
-        fs.appendFileSync("lyrics.txt", JSON.stringify(',' + results), "UTF-8", { "flags": 'a+' })
+        fs.appendFileSync("lyrics.txt", ',' + JSON.stringify(results), "UTF-8", { "flags": 'a+' })
         mongoose.connect(db, (err) => {
             if (err) {
                 console.log(err);
@@ -70,7 +86,13 @@ function getArtistId(next) {
             console.error(error);
         } else if (response.text) {
             data = JSON.parse(response.text);
+            // console.log(data.message.body.artist_list)
+            data.message.body.artist_list.forEach(function (el) {
+                console.log(el.artist.artist_name, el.artist.artist_id);
+            });
+
             next(null, data.message.body.artist_list[0].artist.artist_id);
+            // next(null, 440804);
         }
         else {
             throw new Error('bad response');
@@ -142,7 +164,7 @@ function getLyricsFromTracks(tracks, next) {
                 if (data.message.header.status_code === 200) {
                     var lyric = data.message.body.lyrics.lyrics_body.split('\n');
                 }
-                console.log(lyric);
+                // console.log(lyric);
                 done(null, lyric);
             }
             else {
@@ -164,23 +186,25 @@ function getLyricsFromTracks(tracks, next) {
             return _.uniq(el);
         })
         results = _.uniq(_.flatten(results));
-        console.log(results);
+        // console.log(results);
         next(null, results);
     });
 }
 
 
 function getKeywordsFromLyrics(lines, next) {
+    console.log('*****************************************************************', lines.length)
     Promise.all(
-        lines.slice(0, 99).map(createNluPromise)
+        lines.slice(1, 4).map(createNluPromise)
     ).then(responses => {
         var finalResult = [];
-        lines.slice(0, 99).forEach((line, i) => {
+        lines.slice(1, 4).forEach((line, i) => {
+            // sort keywords out!!!!!!!!!!!!
             var keywords = [];
             if (responses[i]) {
                 responses[i].keywords.forEach(function (el) {
                     keywords.push(el.text);
-                })
+                });
                 var result = {
                     raw: line,
                     keywords: keywords,
@@ -198,7 +222,7 @@ function getKeywordsFromLyrics(lines, next) {
 
 function createNluPromise(line) {
     return new Promise((resolve, reject) => {
-        console.log(line);
+        // console.log(line);
         nlu.analyze({
             'html': line,
             'features': {
@@ -206,12 +230,13 @@ function createNluPromise(line) {
             }
         }, function (err, response) {
             if (err) {
-                console.log("Erro line?", line);
+                console.log(err);
+                // console.log("Erro line?", line);
                 // reject(err);
                 resolve();
             }
             else {
-                console.log(response);
+                // console.log(response);
                 resolve(response);
             }
         });
@@ -266,8 +291,8 @@ function rhymeGetRequest(el) {
         https.get(`https://api.datamuse.com/words?rel_rhy=${lookUpWord}`, function (res) {
             res.on("data", function (chunk) {
                 rhymes += chunk;
-                rhymes = JSON.parse(rhymes);
                 console.log(rhymes);
+                rhymes = JSON.parse(rhymes);
                 resolve(rhymes)
             });
             res.on("end", function (rhymes) {

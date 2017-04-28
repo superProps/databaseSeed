@@ -5,7 +5,7 @@ var key = defaultClient.authentications['key'];
 key.apiKey = '0e33db5e8d277a212d13ded17755c930'; // {String} 
 var opts = {
     format: 'json',
-    qArtist: 'action bronson',
+    qArtist: 'nwa',
     pageSize: 10
 };
 // let trackId = 15445219; // {number}
