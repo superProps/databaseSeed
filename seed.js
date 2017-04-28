@@ -8,7 +8,8 @@ console.log(data);
 
 mongoose.connect(db, (err) => {
     if (err) {
-        console.log(err);
+        console.log('aha')
+        // console.log(err);
     }
     else {
         data.forEach((el) => {
@@ -17,9 +18,9 @@ mongoose.connect(db, (err) => {
                 let lyricNew = new LyricsModel(lyric);
                 lyricNew.save(function (err, doc) {
                     if (err) {
-                        return console.log(err);
+                        // return console.log(err);
                     }
-                    console.log(`Lyric ${i} ${doc.raw} saved to db`);
+                    // console.log(`Lyric ${i} ${doc.raw} saved to db`);
                 });
             });
         });

@@ -1,38 +1,25 @@
 const async = require('async');
 const MusixmatchApi = require('./build/javascript-client/src/index');
+const config = require('./config');
 const defaultClient = MusixmatchApi.ApiClient.instance;
 const key = defaultClient.authentications['key'];
 const _ = require('underscore');
-key.apiKey = '0e33db5e8d277a212d13ded17755c930'; // {String} 
+key.apiKey = config.musixMatchAPIKey.lukes; // {String} 
 var fs = require('fs');
 var NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 var SyllaRhyme = require('syllarhyme');
-var https = require("https");
+var https = require('https');
 const mongoose = require('mongoose');
 const LyricsModel = require('./lyrics_schema');
-const db = 'mongodb://localhost:27017/lyrics';
+const db = config.db.testDB;
 
-// Lukes
-// var nlu = new NaturalLanguageUnderstandingV1({
-//     "username": "73be2f66-c7ce-45cd-8571-fabe6adef297",
-//     "password": "aP7xkCkIx8Bj",
-//     version_date: NaturalLanguageUnderstandingV1.VERSION_DATE_2017_02_27
-// });
 
-// bernie
 
 var nlu = new NaturalLanguageUnderstandingV1({
-    "username": "b47657c3-c18e-49f4-a949-1415c80044da",
-    "password": "gMpQEb0HXf63",
+    'username': config.josh2Credentials.username,
+    'password': config.josh2Credentials.password,
     version_date: NaturalLanguageUnderstandingV1.VERSION_DATE_2017_02_27
 });
-
-//Mauross **
-// var nlu = new NaturalLanguageUnderstandingV1({
-//     "username": "f683016e-5f47-41d9-b7f3-82fdc1b81db1",
-//     "password": "ZKAF5rQkLmGE",
-//     version_date: NaturalLanguageUnderstandingV1.VERSION_DATE_2017_02_27
-// });
 
 
 const artists = new MusixmatchApi.ArtistApi();
@@ -40,7 +27,7 @@ const albums = new MusixmatchApi.AlbumApi();
 const tracks = new MusixmatchApi.TrackApi();
 const lyrics = new MusixmatchApi.LyricsApi();
 
-const artist = "nwa";
+const artist = 'big daddy kane';
 
 async.waterfall([
     getArtistId,
@@ -52,11 +39,11 @@ async.waterfall([
     getRhymes
 ],
     function (err, results) {
-        if (err) console.log("Final Error: ", err);
+        if (err) console.log('Final Error: ', err);
         results = results.filter(function (el) {
             return el.rhymes.length > 0;
         });
-        fs.appendFileSync("lyrics.txt", ',' + JSON.stringify(results), "UTF-8", { "flags": 'a+' })
+        fs.appendFileSync('lyrics.txt', ',' + JSON.stringify(results), 'UTF-8', {'flags': 'a+'});
         mongoose.connect(db, (err) => {
             if (err) {
                 console.log(err);
@@ -75,7 +62,7 @@ async.waterfall([
         });
     });
 
-function getArtistId(next) {
+function getArtistId (next) {
     const ArtistOpts = {
         format: 'json',
         qArtist: artist,
@@ -92,7 +79,7 @@ function getArtistId(next) {
             });
 
             next(null, data.message.body.artist_list[0].artist.artist_id);
-            // next(null, 440804);
+            // next(null, 1156);
         }
         else {
             throw new Error('bad response');
@@ -100,7 +87,7 @@ function getArtistId(next) {
     });
 }
 
-function getAlbumsFromId(id, next) {
+function getAlbumsFromId (id, next) {
     let albumOpts = {
         format: 'json',
         sReleaseDate: 'desc',
@@ -123,11 +110,11 @@ function getAlbumsFromId(id, next) {
     });
 }
 
-function getTracksFromAlbums(albumIds, next) {
+function getTracksFromAlbums (albumIds, next) {
     async.mapSeries(albumIds, function (id, done) {
         var trackOpts = {
             format: 'json',
-            pageSize: 1
+            pageSize: 4
         };
         tracks.albumTracksGetGet(id, trackOpts, (error, data, response) => {
             if (error) {
@@ -151,7 +138,7 @@ function getTracksFromAlbums(albumIds, next) {
 
 }
 
-function getLyricsFromTracks(tracks, next) {
+function getLyricsFromTracks (tracks, next) {
     async.mapSeries(tracks, function (eachTrack, done) {
         var lyricsOpts = {
             format: 'json',
@@ -168,7 +155,8 @@ function getLyricsFromTracks(tracks, next) {
                 done(null, lyric);
             }
             else {
-                throw new Error('bad response');
+                throw new Error('bad response')
+                // done(null, [])
             }
 
         });
@@ -177,28 +165,27 @@ function getLyricsFromTracks(tracks, next) {
     }, function (error, results) {
         results = results.filter(function (el) {
             return el !== undefined;
-        })
+        });
         results = results.map(function (el) {
             el = el.filter(function (line) {
-                return line.length > 3;
-            })
+                return line !== undefined;
+            });
             el.pop();
             return _.uniq(el);
-        })
+        });
         results = _.uniq(_.flatten(results));
-        // console.log(results);
         next(null, results);
     });
 }
 
 
-function getKeywordsFromLyrics(lines, next) {
-    console.log('*****************************************************************', lines.length)
+function getKeywordsFromLyrics (lines, next) {
+    console.log('*****************************************************************', lines.length);
     Promise.all(
-        lines.slice(1, 4).map(createNluPromise)
+        lines.map(createNluPromise)
     ).then(responses => {
         var finalResult = [];
-        lines.slice(1, 4).forEach((line, i) => {
+        lines.forEach((line, i) => {
             // sort keywords out!!!!!!!!!!!!
             var keywords = [];
             if (responses[i]) {
@@ -212,15 +199,15 @@ function getKeywordsFromLyrics(lines, next) {
                 };
                 finalResult.push(result);
             }
-        })
+        });
         next(null, finalResult);
     })
         .catch(error => {
-            console.log(error)
-        })
+            console.log(error);
+        });
 }
 
-function createNluPromise(line) {
+function createNluPromise (line) {
     return new Promise((resolve, reject) => {
         // console.log(line);
         nlu.analyze({
@@ -243,31 +230,31 @@ function createNluPromise(line) {
     });
 }
 
-function getNumberOfSyllablesAndLastWord(lyricsArray, next) {
+function getNumberOfSyllablesAndLastWord (lyricsArray, next) {
     Promise.all(
         lyricsArray.map(findSyllables)
     ).then(response => {
         lyricsArray.map(function (el, i) {
             el.syllables = response[i];
-            el.lastWord = el.raw.split(" ").slice(-1)[0].replace(/[^A-z]/g, "");
+            el.lastWord = el.raw.split(' ').slice(-1)[0].replace(/[^A-z]/g, '');
             if (el.keywords.length === 0) el.keywords.push(el.lastWord);
-        })
+        });
         next(null, lyricsArray);
     })
-        .catch(error => console.log(error))
+        .catch(error => console.log(error));
 }
 
-function findSyllables(line) {
+function findSyllables (line) {
     return new Promise(function (resolve) {
         let syllables = 0;
         SyllaRhyme(function (sr) {
             syllables = sr.syllables(line.raw);
             resolve(syllables);
         });
-    })
+    });
 }
 
-function getRhymes(lyricsArray, next) {
+function getRhymes (lyricsArray, next) {
     Promise.all(
         lyricsArray.map(rhymeGetRequest)
     ).then(response => {
@@ -276,27 +263,27 @@ function getRhymes(lyricsArray, next) {
                 acc.push(el2.word);
                 return acc;
             }, []);
-        })
+        });
         lyricsArray.map(function (el, i) {
             el.rhymes = rhymes[i];
-        })
+        });
         next(null, lyricsArray);
-    })
+    });
 }
 
-function rhymeGetRequest(el) {
+function rhymeGetRequest (el) {
     return new Promise(function (resolve) {
-        let rhymes = "";
+        let rhymes = '';
         let lookUpWord = el.lastWord;
         https.get(`https://api.datamuse.com/words?rel_rhy=${lookUpWord}`, function (res) {
-            res.on("data", function (chunk) {
+            res.on('data', function (chunk) {
                 rhymes += chunk;
-                console.log(rhymes);
+                // console.log(rhymes);
                 rhymes = JSON.parse(rhymes);
-                resolve(rhymes)
+                resolve(rhymes);
             });
-            res.on("end", function (rhymes) {
-            })
-        })
-    })
+            res.on('end', function (rhymes) {
+            });
+        });
+    });
 }
