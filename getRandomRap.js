@@ -48,6 +48,6 @@ function getRandomRap(keyWord) {
 
 }
 
-getRandomRap("hoes");
+getRandomRap("pie");
 
 module.exports = getRandomRap;

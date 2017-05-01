@@ -1,6 +1,6 @@
 const async = require('async');
 const MusixmatchApi = require('./build/javascript-client/src/index');
-const config = require('./config');
+const config = require('./.config');
 const defaultClient = MusixmatchApi.ApiClient.instance;
 const key = defaultClient.authentications['key'];
 const _ = require('underscore');
@@ -27,7 +27,7 @@ const albums = new MusixmatchApi.AlbumApi();
 const tracks = new MusixmatchApi.TrackApi();
 const lyrics = new MusixmatchApi.LyricsApi();
 
-const artist = 'biggie';  // drake, dr dre, snoop, eminem, nicki minaj, a tribe called quest, ll cool j, kendrick lamar, biggie, 2pac, queen latifah, lil kim, de la soul, busta rhymes, ghostface killah, krs-one, big sean, chris brown, lil wayne
+const artist = 'bugzy malone';  // drake, dr dre, snoop, eminem, nicki minaj, a tribe called quest, ll cool j, kendrick lamar, biggie, 2pac, queen latifah, lil kim, de la soul, busta rhymes, ghostface killah, krs-one, big sean, chris brown, lil wayne, skepta, bugzy malone
 
 async.waterfall([
     getArtistId,
@@ -43,7 +43,7 @@ async.waterfall([
         results = results.filter(function (el) {
             return el.rhymes.length > 0;
         });
-        fs.appendFileSync('lyrics.txt', ',' + JSON.stringify(results), 'UTF-8', {'flags': 'a+'});
+        fs.appendFileSync('lyrics2.txt', ',' + JSON.stringify(results), 'UTF-8', {'flags': 'a+'});
         mongoose.connect(db, (err) => {
             if (err) {
                 console.log(err);
@@ -181,10 +181,10 @@ function getLyricsFromTracks (tracks, next) {
 function getKeywordsFromLyrics (lines, next) {
     console.log('*****************************************************************', lines.length);
     Promise.all(
-        lines.slice(1000, 1500).map(createNluPromise)
+        lines.slice(101, 600).map(createNluPromise)
     ).then(responses => {
         var finalResult = [];
-        lines.slice(1000, 1500).forEach((line, i) => {
+        lines.slice(101, 600).forEach((line, i) => {
             var keywords = [];
             if (responses[i]) {
                 responses[i].keywords.forEach(function (el) {
