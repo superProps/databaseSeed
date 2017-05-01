@@ -27,7 +27,7 @@ const albums = new MusixmatchApi.AlbumApi();
 const tracks = new MusixmatchApi.TrackApi();
 const lyrics = new MusixmatchApi.LyricsApi();
 
-const artist = 'lil wayne';  // drake, dr dre, snoop, eminem, nicki minaj, a tribe called quest, ll cool j, kendrick lamar, biggie, 2pac, queen latifah, lil kim, de la soul, busta rhymes, ghostface killah, krs-one, big sean, chris brown, lil wayne
+const artist = 'biggie';  // drake, dr dre, snoop, eminem, nicki minaj, a tribe called quest, ll cool j, kendrick lamar, biggie, 2pac, queen latifah, lil kim, de la soul, busta rhymes, ghostface killah, krs-one, big sean, chris brown, lil wayne
 
 async.waterfall([
     getArtistId,
@@ -113,7 +113,7 @@ function getTracksFromAlbums (albumIds, next) {
     async.mapSeries(albumIds, function (id, done) {
         var trackOpts = {
             format: 'json',
-            pageSize: 4
+            pageSize: 20
         };
         tracks.albumTracksGetGet(id, trackOpts, (error, data, response) => {
             if (error) {
@@ -181,11 +181,10 @@ function getLyricsFromTracks (tracks, next) {
 function getKeywordsFromLyrics (lines, next) {
     console.log('*****************************************************************', lines.length);
     Promise.all(
-        lines.map(createNluPromise)
+        lines.slice(1000, 1500).map(createNluPromise)
     ).then(responses => {
         var finalResult = [];
-        lines.forEach((line, i) => {
-            // sort keywords out!!!!!!!!!!!!
+        lines.slice(1000, 1500).forEach((line, i) => {
             var keywords = [];
             if (responses[i]) {
                 responses[i].keywords.forEach(function (el) {
